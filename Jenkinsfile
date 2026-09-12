@@ -30,25 +30,25 @@ pipeline {
         stage('Update K8s Manifest') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'github-creds', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
-                    sh '''
+                    sh """
                         git config user.email "abdulhayyassir@gmail.com"
                         git config user.name "AbdulhayYassir"
                         
                         if [ -f K8S/backend_deployment.yaml ]; then
-                            sed -i "s|image: .*backend.*|image: ${IMAGE_NAME}:${BUILD_NUMBER}|g" K8S/backend_deployment.yaml
+                            sed -i "s|image: .*|image: ${IMAGE_NAME}:${IMAGE_TAG}|g" K8S/backend_deployment.yaml
                             git add K8S/backend_deployment.yaml
                         elif [ -f k8s/deployment.yaml ]; then
-                            sed -i "s|image: .*backend.*|image: ${IMAGE_NAME}:${BUILD_NUMBER}|g" k8s/deployment.yaml
+                            sed -i "s|image: .*|image: ${IMAGE_NAME}:${IMAGE_TAG}|g" k8s/deployment.yaml
                             git add k8s/deployment.yaml
                         fi
                         
                         if ! git diff --staged --quiet; then
-                            git commit -m "Update image tag to ${BUILD_NUMBER} [skip ci]"
-                            git push https://${GIT_TOKEN}@github.com/AbdulhayYassir/go-ci-dc.git main
+                            git commit -m "Update image tag to ${IMAGE_TAG} [skip ci]"
+                            git push https://${GIT_TOKEN}@github.com/AbdulhayYassir/go-ci-dc.git HEAD:main
                         else
                             echo "No changes to commit."
                         fi
-                    '''
+                    """
                 }
             }
         }
